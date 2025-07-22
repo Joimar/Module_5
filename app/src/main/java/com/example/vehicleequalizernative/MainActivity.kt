@@ -2,6 +2,7 @@ package com.example.vehicleequalizernative
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.SeekBar
 import android.widget.TextView
 import com.example.vehicleequalizernative.databinding.ActivityMainBinding
 
@@ -20,6 +21,38 @@ class MainActivity : AppCompatActivity() {
 
         // Define o estado inicial dos SeekBars com base no estado do Switch
         setEqualizerControlsEnabled(binding.switch1.isChecked)
+
+        // Listener para o Switch do equalizador
+        binding.switch1.setOnCheckedChangeListener(
+            {_, isChecked ->
+                setEqualizerControlsEnabled(isChecked)
+                setEqualizerEnabledNative(isChecked) // Chama a função nativa
+            }
+        )
+
+        // Listener genérico para os SeekBars
+        val seekBarChangeListener = object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+            // Opcional: exibir valor em tempo real na UI
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                when (seekBar?.id) {
+                    binding.seekBar.id ->
+                        setBassLevelNative(seekBar.progress)
+                    binding.seekBar2.id ->
+                        setMidLevelNative(seekBar.progress)
+                    binding.seekBar3.id ->
+                        setTrebleLevelNative(seekBar.progress)
+                }
+            }
+        }
+
+        // Atribui o listener a cada SeekBar
+        binding.seekBar.setOnSeekBarChangeListener(seekBarChangeListener)
+        binding.seekBar2.setOnSeekBarChangeListener(seekBarChangeListener)
+        binding.seekBar3.setOnSeekBarChangeListener(seekBarChangeListener)
+
     }
 
     /**
