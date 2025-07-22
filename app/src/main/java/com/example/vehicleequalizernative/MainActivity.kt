@@ -17,6 +17,9 @@ class MainActivity : AppCompatActivity() {
 
         // Example of a call to a native method
         binding.sampleText.text = stringFromJNI()
+
+        // Define o estado inicial dos SeekBars com base no estado do Switch
+        setEqualizerControlsEnabled(binding.switch1.isChecked)
     }
 
     /**
@@ -25,6 +28,17 @@ class MainActivity : AppCompatActivity() {
      */
     external fun stringFromJNI(): String
 
+    /**
+     * Habilita ou desabilita os controles do equalizador (SeekBars).
+     * @param enabled true para habilitar, false para desabilitar.
+     */
+    private fun setEqualizerControlsEnabled(enabled: Boolean) {
+        binding.seekBar.isEnabled = enabled
+        binding.seekBar2.isEnabled = enabled
+        binding.seekBar3.isEnabled = enabled
+
+
+    }
     companion object {
         // Used to load the 'vehicleequalizernative' library on application startup.
         init {
