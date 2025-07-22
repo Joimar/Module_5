@@ -6,7 +6,7 @@ plugins {
 android {
     namespace = "com.example.vehicleequalizernative"
     compileSdk = 35
-
+    buildFeatures.aidl = true
     defaultConfig {
         applicationId = "com.example.vehicleequalizernative"
         minSdk = 24
