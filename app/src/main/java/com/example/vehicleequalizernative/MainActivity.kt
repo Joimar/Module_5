@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // Example of a call to a native method
-        
+
         binding.nativeStatusTextView.text = stringFromJNI()
         // Define o estado inicial dos SeekBars com base no estado do Switch
         setEqualizerControlsEnabled(binding.switch1.isChecked)
