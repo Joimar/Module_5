@@ -23,12 +23,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * A native method that is implemented by the 'vehicleequalizernative' native library,
-     * which is packaged with this application.
-     */
-    external fun stringFromJNI(): String
-
-    /**
      * Habilita ou desabilita os controles do equalizador (SeekBars).
      * @param enabled true para habilitar, false para desabilitar.
      */
@@ -39,6 +33,25 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+    /**
+     * A native method that is implemented by the 'vehicleequalizernative' native library,
+     * which is packaged with this application.
+     */
+
+    /**
+     * Declaração dos métodos nativos que serão implementados pela
+    biblioteca C++.
+     * A palavra-chave 'external' indica que a implementação está em
+    código nativo.
+     */
+
+    external fun stringFromJNI(): String
+    external fun setEqualizerEnabledNative(enabled: Boolean)
+    external fun setBassLevelNative(level: Int)
+    external fun setMidLevelNative(level: Int)
+    external fun setTrebleLevelNative(level: Int)
+
     companion object {
         // Used to load the 'vehicleequalizernative' library on application startup.
         init {
