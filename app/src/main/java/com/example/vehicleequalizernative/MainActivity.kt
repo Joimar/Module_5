@@ -58,7 +58,8 @@ class MainActivity : AppCompatActivity() {
         )
 
         // Listener genérico para os SeekBars
-        val seekBarChangeListener = object : SeekBar.OnSeekBarChangeListener {
+        val seekBarChangeListener = object :
+            SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
             // Opcional: exibir valor em tempo real na UI
             }
@@ -66,15 +67,15 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
                 when (seekBar?.id) {
                     binding.seekBar.id ->{
-                        setBassLevelNative(seekBar.progress)
+                        equalizerService?.setBassLevel(seekBar.progress)
                         setBassLevelNative(seekBar.progress)
                     }
                     binding.seekBar2.id ->{
-                        setMidLevelNative(seekBar.progress)
+                        equalizerService?.setMidLevel(seekBar.id)
                         setMidLevelNative(seekBar.progress)
                     }
                     binding.seekBar3.id ->{
-                        setTrebleLevelNative(seekBar.progress)
+                        equalizerService?.setTrebleLevel(seekBar.id)
                         setTrebleLevelNative(seekBar.progress)
                     }
                 }
@@ -97,7 +98,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStart()
     {
         super.onStart()
-        val intent = Intent(this, IEqualizerService::class.java)
+        val intent = Intent(this, EqualizerService::class.java)
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
     /**
