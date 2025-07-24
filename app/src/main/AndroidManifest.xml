@@ -12,6 +12,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.VehicleEqualizerNative"
         tools:targetApi="31">
+        <service
+            android:name=".EqualizerService"
+            android:enabled="true"
+            android:exported="false">
+            <!-- Opcional: Adicionar um intent-filter para açõesespecíficas se o serviço for iniciado por intenção -->
+            <!-- <intent-filter>
+            <action
+            android:name="com.example.vehicleequalizerapp.action.BIND_EQUALIZER_SERVI
+            CE" />
+            </intent-filter> -->
+        </service>
         <activity
             android:name=".MainActivity"
             android:exported="true">
