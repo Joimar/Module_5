@@ -101,6 +101,16 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, EqualizerService::class.java)
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
+
+    override fun onStop()
+    {
+        super.onStop()
+        if (equalizerService != null) {
+            unbindService(serviceConnection)
+            equalizerService = null
+            Log.i(TAG, "Desvinculado do EqualizerService.")
+        }
+    }
     /**
      * Habilita ou desabilita os controles do equalizador (SeekBars).
      * @param enabled true para habilitar, false para desabilitar.
