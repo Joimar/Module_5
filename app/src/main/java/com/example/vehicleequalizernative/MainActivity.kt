@@ -9,15 +9,21 @@ import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.widget.SeekBar
-import android.widget.TextView
 import com.example.vehicleequalizernative.databinding.ActivityMainBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val TAG = "VehicleEqualizerApp"
+
     private var equalizerService: IEqualizerService? = null
     private val vehicleSensorSimulator = VehicleSensorSimulator("Velocidade") // Instância do simulador de sensorde velocidade
+    private val vehicleCanBusSimulator = VehicleCanBusSimulator() //Instância do simulador CAN
+    private val activityScope = CoroutineScope(Dispatchers.Main) //Escopo para corrotinas da Activity
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service:
@@ -93,6 +99,29 @@ class MainActivity : AppCompatActivity() {
             binding.speedLabel.text = "Velocidade Atual: $currentSpeed km/h"
             Log.d(TAG, "Velocidade lida: $currentSpeed km/h")
         }
+
+        // Listener para o botão de envio de volume CAN
+        binding.sendCanVolumeButton.setOnClickListener{
+            // Simula o envio de uma mensagem CAN de volume (ID 0x123, valor aleatório 0-100)
+            val randomVolume = (0..100).random()
+            val message = CanMessage(id = 0x123, data =
+                byteArrayOf(randomVolume.toByte()))
+            vehicleCanBusSimulator.sendMessage(message)
+        }
+
+        // Coleta mensagens CAN recebidas e atualiza a UI
+        activityScope.launch{
+            vehicleCanBusSimulator.canMessageFlow.collect{ message ->
+                if (message.id == 0x123 && message.data.isNotEmpty())
+                {
+                    val volume = message.data[0].toInt() and 0xFF
+                    binding.canVolumeLabel.text = "Volume CAN: $volume"
+                    // Em um cenário real, você poderia usar este volume para ajustar o áudio
+                    // equalizerService?.setMasterVolume(volume)
+                    // Exemplo de chamada ao serviço
+                }
+            }
+        }
     }
 
     override fun onStart()
@@ -110,6 +139,9 @@ class MainActivity : AppCompatActivity() {
             equalizerService = null
             Log.i(TAG, "Desvinculado do EqualizerService.")
         }
+        // Importante: parar o simulador CAN quando a atividade for destruída ou não for mais necessária
+        vehicleCanBusSimulator.stopSimulator()
+        activityScope.cancel() // Cancela as corrotinas do escopo da atividade
     }
     /**
      * Habilita ou desabilita os controles do equalizador (SeekBars).
