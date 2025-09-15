@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 class VehicleCanBusSimulator {
     private val TAG = "VehicleCanBusSimulator"
     private val messageChannel = Channel<CanMessage>()
+
+    // Otimização através de Coroutine para delegar long-running tasks para outra Thread
     private val scope = CoroutineScope(Dispatchers.Default)
 
     // Flow para notificar a UI sobre mensagens CAN recebidas
