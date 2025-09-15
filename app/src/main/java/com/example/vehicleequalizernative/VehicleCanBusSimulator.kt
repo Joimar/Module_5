@@ -4,69 +4,52 @@ import android.util.Log
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.isActive
 
 class VehicleCanBusSimulator {
+
     private val TAG = "VehicleCanBusSimulator"
-    private val messageChannel = Channel<CanMessage>()
 
-    // Otimização através de Coroutine para delegar long-running tasks para outra Thread
-    private val scope = CoroutineScope(Dispatchers.Default)
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val messageChannel = Channel<CanMessage>(Channel.UNLIMITED)
+    private val _canMessageFlow = MutableSharedFlow<CanMessage>(replay = 0)
+    val canMessageFlow: SharedFlow<CanMessage> = _canMessageFlow
 
-    // Flow para notificar a UI sobre mensagens CAN recebidas
-    private val _canMessageFlow = MutableSharedFlow<CanMessage>()
-    val canMessageFlow = _canMessageFlow.asSharedFlow()
+    fun startSimulator() {
+        scope.launch {
+            for (message in messageChannel) {
+                if (!isActive) break
+                processMessage(message)
+                yield()
+            }
+        }
 
-    init {
-        // Inicia um consumidor de mensagens CAN simulado
-        scope.launch{
-            for (message in messageChannel)
-            {
-                Log.d(TAG, "Mensagem CAN recebida (ID: 0x%X, Dados: %s)".
-                format(message.id, message.data.joinToString { "%02X".format(it) }))
-                // Publica a mensagem para qualquer ouvinte (ex: MainActivity)
-                _canMessageFlow.emit(message)
+        scope.launch {
+            var volume = 0
+            while (isActive) {
+                val data = byteArrayOf(volume.toByte())
+                val message = CanMessage(0x123, data)
+                messageChannel.send(message)
 
-                // Simula o processamento da mensagem CAN
-                when (message.id)
-                {
-                    0x123 -> {
-                        // Exemplo: ID para mensagem de volume mestre
-                        if (message.data.isNotEmpty())
-                        {
-                            val volume = message.data[0].toInt() and 0xFF
-                            // Converte byte para int (0-255)
-                            Log.i(TAG, "Processando mensagem CAN: Novo Volume Mestre: $volume")
-                            // Em um cenário real, isso seria enviado para a HAL de áudio
-
-                        }
-
-                    }
-                    // Adicione outros IDs de mensagem CAN para simular diferentes dados do veículo
-                }
+                volume = (volume + 5) % 100
+                delay(2000)
             }
         }
     }
 
-    /**
-     * Simula o envio de uma mensagem CAN para o barramento.
-     * @param message A mensagem CAN a ser enviada.
-     */
-
-    fun sendMessage(message: CanMessage) {
-        scope.launch {
-            Log.i(TAG, "Enviando mensagem CAN (ID: 0x%X, Dados: %s)".
-            format(message.id, message.data.joinToString { "%02X".format(it) }))
-            messageChannel.send(message)
+    private suspend fun processMessage(message: CanMessage) {
+        if (AppConfig.DEBUG) {
+            Log.d(TAG, "[CAN] Mensagem recebida: id=${message.id}, data=${message.data.joinToString()}")
         }
+        _canMessageFlow.emit(message)
     }
 
-    /**
-     * Para o simulador CAN e libera os recursos.
-     */
-    fun stopSimulator(){
+    fun stopSimulator() {
         scope.cancel()
         messageChannel.close()
-        Log.d(TAG, "Simulador CAN parado.")
+        if (AppConfig.DEBUG) {
+            Log.i(TAG, "[CAN] Simulador parado.")
+        }
     }
 }
