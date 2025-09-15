@@ -1,0 +1,8 @@
+--------- beginning of main
+--------- beginning of system
+09-14 19:51:04.840  3046  3046 I VehicleEqualizerApp: Conectado ao EqualizerService.
+09-14 19:51:47.526  6621  6621 I VehicleEqualizerApp: Conectado ao EqualizerService.
+--------- beginning of main
+--------- beginning of system
+09-14 19:51:04.840  3046  3046 I VehicleEqualizerApp: Conectado ao EqualizerService.
+09-14 19:51:47.526  6621  6621 I VehicleEqualizerApp: Conectado ao EqualizerService.
