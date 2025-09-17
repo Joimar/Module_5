@@ -1,4 +1,4 @@
-package com.example.module_5
+package com.example.vehicleequalizernative
 
 import org.junit.Test
 
