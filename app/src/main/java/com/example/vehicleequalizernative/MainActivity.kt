@@ -109,6 +109,11 @@ class MainActivity : AppCompatActivity() {
             vehicleCanBusSimulator.sendMessage(message)
         }
 
+        // Listener para o botão de demonstração do processamento DSP
+        binding.demoAudioProcessingButton.setOnClickListener{
+            demonstrateAudioProcessing()
+        }
+
         // Coleta mensagens CAN recebidas e atualiza a UI
         activityScope.launch{
             vehicleCanBusSimulator.canMessageFlow.collect{ message ->
@@ -151,8 +156,55 @@ class MainActivity : AppCompatActivity() {
         binding.seekBar.isEnabled = enabled
         binding.seekBar2.isEnabled = enabled
         binding.seekBar3.isEnabled = enabled
+    }
 
-
+    /**
+     * Demonstra o processamento de áudio usando o DSP nativo
+     * Este método mostra como processar um buffer de áudio com o equalizador
+     */
+    private fun demonstrateAudioProcessing() {
+        try {
+            // Criar um buffer de áudio de exemplo (sine wave de 440Hz)
+            val sampleRate = 44100
+            val duration = 1.0 // 1 segundo
+            val numSamples = (sampleRate * duration).toInt()
+            val frequency = 440.0 // Hz
+            
+            val inputBuffer = FloatArray(numSamples)
+            val outputBuffer = FloatArray(numSamples)
+            
+            // Gerar um sine wave de exemplo
+            for (i in 0 until numSamples) {
+                inputBuffer[i] = (0.3 * Math.sin(2 * Math.PI * frequency * i / sampleRate)).toFloat()
+            }
+            
+            // Processar o buffer através do DSP nativo
+            processAudioBufferNative(inputBuffer, outputBuffer, numSamples, sampleRate)
+            
+            // Log dos resultados
+            Log.d(TAG, "Processamento de áudio concluído:")
+            Log.d(TAG, "Equalizador ativo: ${isEqualizerEnabledNative()}")
+            Log.d(TAG, "Níveis - Bass: ${getBassLevelNative()}, Mid: ${getMidLevelNative()}, Treble: ${getTrebleLevelNative()}")
+            
+            // Calcular RMS para verificar se o processamento teve efeito
+            val inputRms = calculateRMS(inputBuffer)
+            val outputRms = calculateRMS(outputBuffer)
+            Log.d(TAG, "RMS Input: $inputRms, Output: $outputRms")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Erro no processamento de áudio: ${e.message}")
+        }
+    }
+    
+    /**
+     * Calcula o valor RMS (Root Mean Square) de um buffer de áudio
+     */
+    private fun calculateRMS(buffer: FloatArray): Double {
+        var sum = 0.0
+        for (sample in buffer) {
+            sum += sample * sample
+        }
+        return Math.sqrt(sum / buffer.size)
     }
 
     /**
@@ -172,6 +224,15 @@ class MainActivity : AppCompatActivity() {
     external fun setBassLevelNative(level: Int)
     external fun setMidLevelNative(level: Int)
     external fun setTrebleLevelNative(level: Int)
+    
+    // New DSP processing methods
+    external fun processAudioBufferNative(inputBuffer: FloatArray, outputBuffer: FloatArray, numSamples: Int, sampleRate: Int)
+    external fun processAudioBufferStereoNative(leftChannel: FloatArray, rightChannel: FloatArray, numSamples: Int, sampleRate: Int)
+    external fun isEqualizerEnabledNative(): Boolean
+    external fun getBassLevelNative(): Int
+    external fun getMidLevelNative(): Int
+    external fun getTrebleLevelNative(): Int
+    external fun resetFiltersNative()
 
     companion object {
         // Used to load the 'vehicleequalizernative' library on application startup.
